@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+<title>সংকল্প OS — v3</title>
+<meta name="description" content="সংকল্প OS — A premium, offline-first productivity vault for achievers." />
+
+
+
+<link href="fonts/fonts.css" rel="stylesheet">
+
+<script src="vendor/tailwind.js"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter','Hind Siliguri','system-ui','sans-serif'],
+          bn: ['"Hind Siliguri"','Inter','system-ui','sans-serif'],
+          display: ['"Hind Siliguri"','Inter','sans-serif'],
+        },
+        colors: {
+          brand: {50:'#effaf6',100:'#d7f2e8',200:'#b0e4d2',300:'#7fcfb6',400:'#4db396',500:'#2a977b',600:'#1c7a63',700:'#186251',800:'#164e42',900:'#133f37',950:'#0a2420'}
+        },
+        boxShadow: { soft: '0 1px 2px rgba(15,23,42,.04), 0 8px 24px rgba(15,23,42,.06)', glow:'0 0 40px rgba(28,122,99,.25)' },
+        keyframes: {
+          fadeIn:{from:{opacity:0,transform:'translateY(6px)'},to:{opacity:1,transform:'none'}},
+          shine:{'0%':{backgroundPosition:'-200% 0'},'100%':{backgroundPosition:'200% 0'}},
+          floaty:{'0%,100%':{transform:'translateY(0)'},'50%':{transform:'translateY(-6px)'}},
+          pop:{'0%':{transform:'scale(.6)',opacity:0},'70%':{transform:'scale(1.05)',opacity:1},'100%':{transform:'scale(1)',opacity:1}},
+          shimmer:{'0%':{transform:'translateX(-100%)'},'100%':{transform:'translateX(100%)'}},
+          orbit:{from:{transform:'rotate(0deg)'},to:{transform:'rotate(360deg)'}},
+          pulseRing:{'0%':{transform:'scale(.7)',opacity:.7},'80%,100%':{transform:'scale(1.5)',opacity:0}},
+          wave:{'0%,100%':{transform:'translateY(0)'},'50%':{transform:'translateY(-3px)'}},
+          gradientMove:{'0%,100%':{backgroundPosition:'0% 50%'},'50%':{backgroundPosition:'100% 50%'}},
+        },
+        animation:{
+          fadeIn:'fadeIn .35s ease-out both',
+          shine:'shine 2.4s linear infinite',
+          floaty:'floaty 3.5s ease-in-out infinite',
+          pop:'pop .5s cubic-bezier(.34,1.56,.64,1) both',
+          shimmer:'shimmer 2.2s linear infinite',
+          orbit:'orbit 6s linear infinite',
+          pulseRing:'pulseRing 1.8s cubic-bezier(0.66,0,0,1) infinite',
+          wave:'wave 2s ease-in-out infinite',
+          gradientMove:'gradientMove 6s ease infinite',
+        }
+      }
+    }
+  }
+</script>
+
+<script src="vendor/react.production.min.js"></script>
+<script src="vendor/react-dom.production.min.js"></script>
+
+
+<script src="vendor/lucide.min.js"></script>
+<script src="vendor/chart.umd.min.js"></script>
+
+<style>
+  html,body,#root{height:100%}
+  body{font-family:'Inter','Hind Siliguri',system-ui,sans-serif;background:#f7f7fb}
+  html.dark body{background:#0b0d12}
+  .font-bn{font-family:'Hind Siliguri','Inter',system-ui,sans-serif}
+  .font-display{font-family:'Baloo Da 2','Hind Siliguri',sans-serif}
+  .scrollbar-thin::-webkit-scrollbar{width:8px;height:8px}
+  .scrollbar-thin::-webkit-scrollbar-thumb{background:rgba(99,102,241,.25);border-radius:8px}
+  .glass{backdrop-filter:blur(10px)}
+  .grad-bar{background:linear-gradient(90deg,#4f46e5,#7c3aed);background-size:200% 100%}
+  .grad-premium{background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%);background-size:200% 200%}
+  .splash-bg{background:radial-gradient(1200px 600px at 30% 20%, #eef2ff, transparent 65%),radial-gradient(900px 500px at 80% 80%, #ede9fe, transparent 65%),#f8fafc}
+  html.dark .splash-bg{background:radial-gradient(1200px 600px at 30% 20%, #1e1b4b, transparent 65%),radial-gradient(900px 500px at 80% 80%, #1e293b, transparent 65%),#0b1020}
+  input,textarea,select,button{font-family:inherit}
+  .no-scrollbar::-webkit-scrollbar{display:none}
+  .text-gradient{background:linear-gradient(90deg,#4f46e5,#7c3aed);-webkit-background-clip:text;background-clip:text;color:transparent}
+  @keyframes softGlow{0%,100%{box-shadow:0 0 0 1px rgba(244,63,94,.30), 0 0 12px rgba(244,63,94,.20)}50%{box-shadow:0 0 0 2px rgba(244,63,94,.45), 0 0 22px rgba(244,63,94,.35)}}
+  .task-due-glow{animation:softGlow 2.4s ease-in-out infinite}
+  .brand-mark{background:linear-gradient(135deg,#4f46e5,#7c3aed)}
+  /* Flashcard 3D flip */
+  .flip-scene{perspective:1200px}
+  .flip-card{position:relative;width:100%;min-height:220px;transition:transform .7s cubic-bezier(.4,.2,.2,1);transform-style:preserve-3d;cursor:pointer}
+  .flip-card.is-flipped{transform:rotateY(180deg)}
+  .flip-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;align-items:center;justify-content:center;border-radius:1rem;padding:1.5rem;text-align:center}
+  .flip-back{transform:rotateY(180deg)}
+
+  /* ===== v4 minimal theme ===== */
+  :root{--bg:#f6f7f5;--ink:#111816;--brand:#1c7a63;--line:rgba(17,24,22,.08)}
+  html.dark{--bg:#0b0f0e;--ink:#e8efec;--line:rgba(255,255,255,.07)}
+  body{background:var(--bg)!important;-webkit-tap-highlight-color:transparent;font-size:15px}
+  .font-display{font-family:'Hind Siliguri','Inter',sans-serif!important;font-weight:600!important}
+  .grad-bar,.grad-premium,.brand-mark{background:var(--brand)!important}
+  .text-gradient{background:none!important;color:var(--brand)!important;-webkit-text-fill-color:currentColor}
+  html.dark .text-gradient{color:#4db396!important}
+  .shadow-soft{box-shadow:0 1px 2px rgba(0,0,0,.03)!important}
+  .animate-floaty,.animate-shine,.animate-gradientMove{animation:none!important}
+  .splash-bg{background:var(--bg)!important}
+  header.sticky{background:color-mix(in srgb,var(--bg) 88%,transparent)!important;border-color:var(--line)!important;padding-top:env(safe-area-inset-top)}
+  main h2{letter-spacing:-.01em}
+  main .text-3xl{font-size:1.5rem!important;line-height:2rem!important}
+  main .text-4xl{font-size:1.75rem!important}
+  main .text-2xl{font-size:1.25rem!important}
+  input,textarea,select{font-size:16px!important}
+  /* bottom nav */
+  .bnav{background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(14px);border-top:1px solid var(--line);padding-bottom:max(.5rem,env(safe-area-inset-bottom))}
+  .bnav-item{color:#7b8783}
+  .bnav-pill{display:flex;align-items:center;justify-content:center;width:52px;height:28px;border-radius:999px;transition:all .2s}
+  .bnav-item.is-active{color:var(--brand)}
+  .bnav-item.is-active .bnav-pill{background:color-mix(in srgb,var(--brand) 14%,transparent)}
+  html.dark .bnav-item.is-active{color:#6fd1b2}
+  /* flashcards */
+  .fc-tile{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px 16px;transition:transform .15s}
+  .fc-tile:active{transform:scale(.985)}
+  html.dark .fc-tile{background:#121816}
+  .fc-dot{width:8px;height:8px;border-radius:99px;background:#4db396}.fc-dot.is-hard{background:#f43f5e}
+  .fc-answer{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:14px;color:#55625e;animation:fadeIn .25s ease-out}
+  html.dark .fc-answer{color:#a9b8b3}
+  .fc-act{width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border-radius:12px;background:color-mix(in srgb,var(--ink) 6%,transparent)}
+  .fc-study{background:var(--bg)}
+  .flip-card.fc-big{min-height:min(58vh,440px)}
+  .fc-face-front,.fc-face-back{flex-direction:column;border-radius:28px!important;padding:2rem 1.5rem!important;background:#fff;border:1px solid var(--line);box-shadow:0 20px 50px -25px rgba(0,0,0,.25)}
+  .fc-face-back{background:color-mix(in srgb,var(--brand) 7%,#fff)}
+  html.dark .fc-face-front{background:#141b19}
+  html.dark .fc-face-back{background:#10241e}
+  .fc-label{position:absolute;top:18px;left:20px;font-size:11px;letter-spacing:.08em;color:#8a9692}
+  .fc-grade{display:flex;flex-direction:column;align-items:center;padding:10px 0;border-radius:16px;font-family:inherit}
+  .g-again{background:#fde8ea;color:#be123c}.g-hard{background:#fdf1dc;color:#b45309}.g-good{background:#e2f3ec;color:#186251}.g-easy{background:var(--brand);color:#fff}
+  html.dark .g-again{background:#3a1419;color:#fda4af}html.dark .g-hard{background:#33240c;color:#fcd34d}html.dark .g-good{background:#12302a;color:#7fcfb6}
+</style>
+</head>
+<body class="antialiased text-slate-800 dark:text-slate-100">
+<div id="root"></div>
+
+<script src="app.js"></script>
+<script src="native.js"></script>
+</body>
+</html>
