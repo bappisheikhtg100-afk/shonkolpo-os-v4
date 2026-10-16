@@ -1,0 +1,66 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: ["**"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Add Android platform
+        run: npx cap add android
+
+      - name: Generate app icons & splash
+        run: npx capacitor-assets generate --android || echo "asset generation skipped"
+
+      - name: Sync web assets
+        run: npx cap sync android
+
+      - name: Add Android permissions (alarms, notifications, storage)
+        run: |
+          M=android/app/src/main/AndroidManifest.xml
+          for P in POST_NOTIFICATIONS SCHEDULE_EXACT_ALARM USE_EXACT_ALARM RECEIVE_BOOT_COMPLETED WAKE_LOCK VIBRATE; do
+            grep -q "android.permission.$P\"" $M || sed -i "s#</manifest>#    <uses-permission android:name=\"android.permission.$P\" />\n</manifest>#" $M
+          done
+          grep -q WRITE_EXTERNAL_STORAGE $M || sed -i 's#</manifest>#    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" />\n    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />\n</manifest>#' $M
+          sed -i 's#<application#<application android:requestLegacyExternalStorage="true"#' $M
+          cat $M
+
+      - name: Build debug APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Build unsigned release APK
+        run: |
+          cd android
+          ./gradlew assembleRelease --no-daemon || echo "release build skipped"
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: sonkolpo-os-apk
+          path: |
+            android/app/build/outputs/apk/debug/*.apk
+            android/app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
